@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Antony11659/backend-project-4/issues"
   },
-  "homepage": "https://github.com/Antony11659/backend-project-4#readme"
+  "homepage": "https://github.com/Antony11659/backend-project-4#readme",
+  "devDependencies": {
+    "eslint": "^8.35.0"
+  }
 }
