@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Antony11659/backend-project-4.git"
@@ -18,5 +19,8 @@
   "homepage": "https://github.com/Antony11659/backend-project-4#readme",
   "devDependencies": {
     "eslint": "^8.35.0"
+  },
+  "dependencies": {
+    "commander": "^10.0.0"
   }
 }
