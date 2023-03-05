@@ -1,4 +1,4 @@
-#!usr/bin/env node
+#!/usr/bin/env node
 import { program } from "commander";
 
 program
@@ -7,3 +7,5 @@ program
   .version("1.0.0")
   .option('-o, --output [dir]', 'output dir (default: "/home/user/current-dir"')
   .parse(process.argv);
+
+  console.log('Hello!')
