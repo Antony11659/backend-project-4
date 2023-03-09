@@ -3,3 +3,6 @@ install:
 
 page-loader:
 	node bin/page-loader.js
+
+test:
+	npm test
