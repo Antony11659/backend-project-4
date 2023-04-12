@@ -24,5 +24,5 @@ test('check data and the path of the file', async () => {
 });
 
 test('wrong dir', async () => {
-  await expect(pageLoad(testURL, tmpDir)).rejects.toThrow();
+  await expect(pageLoad(testURL, 'bla')).rejects.toThrow();
 });
