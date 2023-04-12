@@ -1,6 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import path from 'path';
+import process from 'process';
 
 const makeFileName = (file) => {
   const [, addressWithoutProtocol] = file.split('//');
@@ -8,9 +9,22 @@ const makeFileName = (file) => {
   return result.concat('.html');
 };
 
-const pageLoader = (dir, url) => {
+const pageLoad = (dir = process.cwd(), url) => {
   const filePath = path.join(dir, makeFileName(url));
-  axios.get(url)
-    .then((response) => fs.writeFile(filePath, response.data, () => console.log(filePath)));
+  return new Promise((resolve) => {
+    const data = axios.get(url);
+    resolve(data);
+  })
+  .then((response) => {
+    return fs.promises.writeFile(filePath, response.data);
+  })
+  .then(() => {
+    console.log(filePath)
+    return filePath;
+  })
+  .catch((err) => {
+    throw new Error(err.message);
+  });
 };
-export default pageLoader;
+
+export default pageLoad;

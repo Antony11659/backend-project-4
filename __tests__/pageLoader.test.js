@@ -1,9 +1,29 @@
-import pageLoader from '../src/load.js';
+import fs from 'fs';
+import os from 'os';
+import nock from 'nock';
+import path from 'path';
+import pageLoad from '../src/load.js';
 
-test('pageLoader', () => {
-    expect('Hello world').toBe('Hello world');
+const testURL = 'https://ru.hexlet.io/courses';
+const expectedData = '<h1>test passed</h1>';
+const scope = nock(testURL)
+     .get(``)
+     .reply(200, expectedData);
+
+nock.disableNetConnect();
+
+let tmpDir;
+
+beforeEach(async () => {
+    tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
+  })
+  
+  test('check data and the path of the file', async () => {
+    const filepath = await pageLoad(tmpDir, testURL);
+    const data = await fs.promises.readFile(filepath, 'utf8');
+    expect(data).toBe(expectedData);
 });
 
-// Тесты должны проверять, что данные скачиваются в нужную директорию.
-// Это значит, что тесты должны передавать путь к директории, куда надо скачать данные.
-// Они могут передавать путь к временной директории.
+  test('wrong dir', async () => {
+     await expect(pageLoad('bla', testURL)).rejects.toThrow()
+  })
