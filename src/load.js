@@ -9,22 +9,20 @@ const makeFileName = (file) => {
   return result.concat('.html');
 };
 
-const pageLoad = (dir = process.cwd(), url) => {
+const pageLoad = (url, dir = process.cwd()) => {
   const filePath = path.join(dir, makeFileName(url));
   return new Promise((resolve) => {
     const data = axios.get(url);
     resolve(data);
   })
-  .then((response) => {
-    return fs.promises.writeFile(filePath, response.data);
-  })
-  .then(() => {
-    console.log(filePath)
-    return filePath;
-  })
-  .catch((err) => {
-    throw new Error(err.message);
-  });
+    .then((response) => fs.promises.writeFile(filePath, response.data))
+    .then(() => {
+      console.log(filePath);
+      return filePath;
+    })
+    .catch((err) => {
+      throw new Error(err.message);
+    });
 };
 
 export default pageLoad;

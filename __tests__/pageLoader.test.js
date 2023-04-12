@@ -6,24 +6,23 @@ import pageLoad from '../src/load.js';
 
 const testURL = 'https://ru.hexlet.io/courses';
 const expectedData = '<h1>test passed</h1>';
-const scope = nock(testURL)
-     .get(``)
-     .reply(200, expectedData);
+
+nock(testURL).get('').reply(200, expectedData);
 
 nock.disableNetConnect();
 
 let tmpDir;
 
 beforeEach(async () => {
-    tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
-  })
-  
-  test('check data and the path of the file', async () => {
-    const filepath = await pageLoad(tmpDir, testURL);
-    const data = await fs.promises.readFile(filepath, 'utf8');
-    expect(data).toBe(expectedData);
+  tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
 });
 
-  test('wrong dir', async () => {
-     await expect(pageLoad('bla', testURL)).rejects.toThrow()
-  })
+test('check data and the path of the file', async () => {
+  const filepath = await pageLoad(testURL, tmpDir);
+  const data = await fs.promises.readFile(filepath, 'utf8');
+  expect(data).toBe(expectedData);
+});
+
+test('wrong dir', async () => {
+  await expect(pageLoad(testURL, tmpDir)).rejects.toThrow();
+});
