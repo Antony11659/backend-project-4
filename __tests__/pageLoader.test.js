@@ -5,9 +5,12 @@ import path from 'path';
 import pageLoad from '../src/load.js';
 
 const testURL = 'https://ru.hexlet.io/courses';
-const expectedData = '<h1>test passed</h1>';
+const expectedData = fs.promises.readFile('./__fixtures__/after.html', 'utf-8');
 
-nock(testURL).get('').reply(200, expectedData);
+nock(testURL).get('').reply(200, async () => {
+  const data = await fs.promises.readFile('./__fixtures__/before.html', 'utf-8');
+  return data;
+});
 
 nock.disableNetConnect();
 
@@ -20,7 +23,8 @@ beforeEach(async () => {
 test('check data and the path of the file', async () => {
   const filepath = await pageLoad(testURL, tmpDir);
   const data = await fs.promises.readFile(filepath, 'utf8');
-  expect(data).toBe(expectedData);
+  const expected = await expectedData;
+  expect(data).toBe(expected);
 });
 
 test('wrong dir', async () => {
