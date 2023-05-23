@@ -17,10 +17,13 @@ const isSrcLocal = (url, src) => {
   return domain === srcDomain;
 };
 
-const buildName = (file, type = '') => {
-  const addressWithoutProtocol = file.replace(/^https?:\/\//, '');
+const buildName = (address, type) => {
+  const addressElements = path.parse(address);
+  const { dir, ext, name } = addressElements;
+  const addressWithoutProtocol = dir.replace(/^(\/|^https?:\/\/)/, '').concat('/', '');
   const result = addressWithoutProtocol.split(/[./]/g).join('-');
-  return result.concat(type);
+  const extension = type ?? ext;
+  return result.concat(name, extension);
 };
 
 const loadUrl = (url, newUrl, localPath) => new Promise((resolve) => {
@@ -32,7 +35,7 @@ const loadUrl = (url, newUrl, localPath) => new Promise((resolve) => {
 })
   .catch((err) => new Error(err));
 
-const downloadImage = (domain, data, localPath) => {
+const downloadResource = (domain, data, dirWithRes) => {
   const $ = cheerio.load(data);
   // $('img').each(function () {
   //   const oldSrc = $(this).attr('src');
@@ -45,17 +48,19 @@ const downloadImage = (domain, data, localPath) => {
   // SELECT ALL RESOURCES
   $('img').each(function () {
     const oldSrc = $(this).attr('src');
-    const newSrc = isSrcLocal(domain, oldSrc) ? buildName(oldSrc, '.png') : oldSrc;
+    const newSrc = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
     $(this).attr('src', newSrc);
   });
   $('script').each(function () {
     const oldSrc = $(this).attr('src');
-    const newSrc = isSrcLocal(domain, oldSrc) ? buildName(oldSrc, '.js') : oldSrc;
+    const newSrc = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
     $(this).attr('src', newSrc);
   });
   $('link').each(function () {
     const oldSrc = $(this).attr('href');
-    const newSrc = isSrcLocal(domain, oldSrc) ? buildName(oldSrc, '.css') : oldSrc;
+    const canonical = $(this).attr('rel') === 'canonical';
+    const newName = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
+    const newSrc = canonical ? path.join(dirWithRes, buildName(domain, '.html')) : newName;
     $(this).attr('href', newSrc);
   });
   console.log($.html());
@@ -63,15 +68,14 @@ const downloadImage = (domain, data, localPath) => {
 
 const downloadPage = (url, dir = process.cwd()) => {
   const filePath = path.join(dir, buildName(url, '.html'));
-  const imageDir = path.join(dir, buildName(url, '_files'));
+  const dirResource = path.join(dir, buildName(url, '_files'));
 
   return new Promise((resolve) => {
     const data = axios.get(url);
     // fs.promises.mkdir(imageDir);
     resolve(data);
   })
-    // .then((response) => downloadImage(response.data, imageDir))
-    .then((response) => downloadImage(url, response.data, imageDir))
+    .then((response) => downloadResource(url, response.data, dirResource))
     // .then((response) => {
   // console.log(response);
   // fs.promises.writeFile(filePath, response);
@@ -83,11 +87,11 @@ const downloadPage = (url, dir = process.cwd()) => {
     });
 };
 
-downloadPage(testURL);
+// downloadPage(testURL);
+console.log(buildName("https://assets/professions/nodejs.png"));
 // export default downloadPage;
-
 // 1) <link href="/courses" rel="canonical">  =>  <link href="-courses.css" rel="canonical">
-//  something is wrong with generating the name 
+//  something is wrong with generating the name
 // (should be <link href="ru-hexlet-io-courses_files/ru-hexlet-io-courses.html" rel="canonical">)
 // 2) To load all resources
 // 3) make tests
