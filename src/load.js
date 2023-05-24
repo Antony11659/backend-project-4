@@ -26,44 +26,37 @@ const buildName = (address, type) => {
   return result.concat(name, extension);
 };
 
-const loadUrl = (url, newUrl, localPath) => new Promise((resolve) => {
-  const data = axios.get(url, { responseType: 'stream' });
-  resolve(data);
-}).then((response) => {
-  const imageFile = path.join(localPath, newUrl);
-  // fs.promises.writeFile(imageFile, response.data);
-})
-  .catch((err) => new Error(err));
-
+const loadUrl = (resources) => {
+  const { url, filePath } = resources;
+  new Promise((resolve) => {
+    const data = url; // const data = axios.get(url, { responseType: 'stream' });
+    resolve(data);
+  }).then((response) => {
+    fs.promises.writeFile(filePath, response);
+  }).catch((err) => {
+    throw new Error(err.message);
+  });
+};
 const downloadResource = (domain, data, dirWithRes) => {
   const $ = cheerio.load(data);
-  // $('img').each(function () {
-  //   const oldSrc = $(this).attr('src');
-  //   // const newSrc = path.join(localPath, generateImageName(oldSrc));
-  //   const newSrc = '/assets/professions/nodejs.png';
-  //   loadUrl(oldSrc, generateImageName(oldSrc), localPath); // newSrc should be here
-  //   $(this).attr('src', newSrc);
-  // });
-
-  // SELECT ALL RESOURCES
-  $('img').each(function () {
-    const oldSrc = $(this).attr('src');
-    const newSrc = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
-    $(this).attr('src', newSrc);
-  });
-  $('script').each(function () {
-    const oldSrc = $(this).attr('src');
-    const newSrc = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
-    $(this).attr('src', newSrc);
-  });
-  $('link').each(function () {
-    const oldSrc = $(this).attr('href');
-    const canonical = $(this).attr('rel') === 'canonical';
-    const newName = isSrcLocal(domain, oldSrc) ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
-    const newSrc = canonical ? path.join(dirWithRes, buildName(domain, '.html')) : newName;
-    $(this).attr('href', newSrc);
-  });
-  console.log($.html());
+  const tags = [{ tag: 'img', href: 'src' }, { tag: 'link', href: 'href' }];
+  const resources = tags.reduce((acc, el) => {
+    const { tag, href } = el;
+    $(tag).each(function () {
+      const oldSrc = $(this).attr(href);
+      const canonical = $(this).attr('rel') === 'canonical';
+      const localDomain = isSrcLocal(domain, oldSrc);
+      const newName = localDomain ? path.join(dirWithRes, buildName(oldSrc)) : oldSrc;
+      const newSrc = canonical ? path.join(dirWithRes, buildName(domain, '.html')) : newName;
+      $(this).attr(href, newSrc);
+      if (oldSrc !== newSrc) {
+        acc.push({ url: oldSrc, filePath: newSrc });
+      }
+    });
+    return acc;
+  }, []);
+  Promise.all(resources.map((el) => loadUrl(el)));
+  return $.html();
 };
 
 const downloadPage = (url, dir = process.cwd()) => {
@@ -72,26 +65,23 @@ const downloadPage = (url, dir = process.cwd()) => {
 
   return new Promise((resolve) => {
     const data = axios.get(url);
-    // fs.promises.mkdir(imageDir);
+    fs.promises.mkdir(dirResource);
     resolve(data);
   })
     .then((response) => downloadResource(url, response.data, dirResource))
-    // .then((response) => {
-  // console.log(response);
-  // fs.promises.writeFile(filePath, response);
-  // console.log(filePath);
-  // return filePath;
-    // })
+    .then((response) => {
+      console.log(response);
+      fs.promises.writeFile(filePath, response);
+      console.log(filePath);
+      return filePath;
+    })
     .catch((err) => {
       throw new Error(err.message);
     });
 };
-
-// downloadPage(testURL);
-console.log(buildName("https://assets/professions/nodejs.png"));
+downloadPage(testURL);
+// console.log(buildName('https://assets/professions/nodejs.png'));
 // export default downloadPage;
-// 1) <link href="/courses" rel="canonical">  =>  <link href="-courses.css" rel="canonical">
-//  something is wrong with generating the name
-// (should be <link href="ru-hexlet-io-courses_files/ru-hexlet-io-courses.html" rel="canonical">)
+
 // 2) To load all resources
 // 3) make tests
