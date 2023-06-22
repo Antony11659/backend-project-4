@@ -3,13 +3,17 @@ import axios from 'axios';
 import path from 'path';
 import process from 'process';
 import * as cheerio from 'cheerio';
-import nock from 'nock';
+import { exit } from 'node:process';
+import debug from 'debug';
+// import nock from 'nock';
+
+const logger = debug('loadData');
 
 const testURL = 'https://ru.hexlet.io/courses';
-nock(testURL).get('').reply(200, async () => {
-  const data = await fs.promises.readFile('../__fixtures__/before.html', 'utf-8');
-  return data;
-});
+// nock(testURL).get('').reply(200, async () => {
+//   const data = await fs.promises.readFile('../__fixtures__/before.html', 'utf-8');
+//   return data;
+// });
 
 const isSrcLocal = (url, src) => {
   const domain = new URL(url).hostname;
@@ -37,9 +41,10 @@ const loadUrl = (resources) => {
     throw new Error(err.message);
   });
 };
+
 const downloadResource = (domain, data, dirWithRes) => {
   const $ = cheerio.load(data);
-  const tags = [{ tag: 'img', href: 'src' }, { tag: 'link', href: 'href' }];
+  const tags = [{ tag: 'img', href: 'src' }, { tag: 'link', href: 'href' }, { tag: 'script', href: 'src' }];
   const resources = tags.reduce((acc, el) => {
     const { tag, href } = el;
     $(tag).each(function () {
@@ -61,27 +66,31 @@ const downloadResource = (domain, data, dirWithRes) => {
 
 const downloadPage = (url, dir = process.cwd()) => {
   const filePath = path.join(dir, buildName(url, '.html'));
-  const dirResource = path.join(dir, buildName(url, '_files'));
-
+  // const dirResource = path.join(dir, buildName(url, '_files'));
+  // logger('dir with resources is created', dirResource);   ???
   return new Promise((resolve) => {
     const data = axios.get(url);
-    fs.promises.mkdir(dirResource);
+    // fs.promises.mkdir(dirResource);
     resolve(data);
   })
-    .then((response) => downloadResource(url, response.data, dirResource))
+  // .then((response) => downloadResource(url, response.data, dirResource))
     .then((response) => {
-      console.log(response);
-      fs.promises.writeFile(filePath, response);
-      console.log(filePath);
+      logger('data is loaded and response status is ', response.status);
+      // console.log(response);
+      fs.promises.writeFile(filePath, response.data).catch((err) => {
+        throw new Error('can not write file');
+      });
+    // console.log(filePath);
+    // return filePath;
+    }).then(() => {
+      logger('the file is created it\'s name is', filePath);
       return filePath;
-    })
-    .catch((err) => {
-      throw new Error(err.message);
+    }).catch((err) => {
+      throw new Error('some error occurred');
+      // exit(1);
     });
 };
-downloadPage(testURL);
-// console.log(buildName('https://assets/professions/nodejs.png'));
-// export default downloadPage;
+// downloadPage(testURL);
+logger('hello from log');
 
-// 2) To load all resources
-// 3) make tests
+export default downloadPage;
