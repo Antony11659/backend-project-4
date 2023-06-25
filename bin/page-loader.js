@@ -11,7 +11,9 @@ program
   .option('-d, --debug', 'enable debug console')
   .action(() => {
     const dir = program.opts().output;
-    debug.enable('loadData');
+    if (program.opts().debug) {
+      debug.enable('loadData');
+    }
     const url = program.args[0];
     return pageLoad(url, dir);
   })
