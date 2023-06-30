@@ -12,7 +12,7 @@ program
   .action(() => {
     const dir = program.opts().output;
     if (program.opts().debug) {
-      debug.enable('loadData');
+      debug.enable('page-loader, axios');
     }
     const url = program.args[0];
     return pageLoad(url, dir);
