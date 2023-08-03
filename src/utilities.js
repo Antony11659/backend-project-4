@@ -69,7 +69,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
     return acc;
   }, []);
 
-  return Promise.all(allLocalLinks).then(() => console.log(`the files are downloaded successfully into ${dirWithAssets}`));
+  return Promise.all(allLocalLinks);
 };
 
 export { downloadAssets, buildName };
