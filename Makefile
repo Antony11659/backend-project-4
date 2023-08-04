@@ -5,7 +5,7 @@ page-loader:
 	node bin/page-loader.js
 
 test:
-	npm test
+	DEBUG=page-loader,nock npm test
 
 lint:
 	npx eslint .
