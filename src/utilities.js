@@ -19,11 +19,13 @@ const buildName = (address, type) => {
 const loadData = (url, dir) => {
   const filePath = path.join(dir, buildName(url));
   return new Promise((resolve) => {
-    const data = url; // const data = axios.get(url, { responseType: 'stream' });
+    // const data = url;
+     const data = axios.get(url, { responseType: 'stream' });
+    // const data = axios.get(url);
     resolve(data);
   })
     .then((response) => {
-      fs.promises.writeFile(filePath, response).catch((err) => {
+      fs.promises.writeFile(filePath, response.data).catch((err) => {
         throw new Error(err);
       });
     })
@@ -52,7 +54,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   // select all local links from html page
   const allLocalLinks = tags.reduce((acc, { tag, href }) => {
     $(`${tag}[${href}]`).each((_, el) => {
-      // make srcLine the whole url
+      // make from srcLine the whole url
       const url = makeSrcLine(domain, el.attribs[href]);
       if (isLocalDomain(domain, url)) {
         // if 'rel'='canonical' is present add to this URL '.html' type to create
@@ -60,8 +62,8 @@ const downloadAssets = (domain, data, dirWithAssets) => {
         const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
 
         const promise = loadData(newUrl, dirWithAssets).then((res) => {
-          const fileNamePath = res;
-          $(el).attr(href, fileNamePath);
+          const filePathName = res;
+          $(el).attr(href, filePathName);
         });
         acc.push(promise);
       }
