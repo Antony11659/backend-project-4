@@ -16,24 +16,24 @@ const log = debug('page-loader');
 const downloadPage = (url, dir = process.cwd()) => {
   log(`the data is loading from ${url} into ${dir}`);
   const filePath = path.join(dir, buildName(url, '.html'));
-  const dirResourcePath = path.join(dir, buildName(url, '_files'));
+  const dirAssetsPath = path.join(dir, buildName(url, '_files'));
   return new Promise((resolve) => {
     const data = axios.get(url).catch((err) => {
       throw new NetworkError(err);
     });
-    fs.promises.mkdir(dirResourcePath);
+    fs.promises.mkdir(dirAssetsPath);
     resolve(data);
   })
     .then((response) => {
       const { data, status } = response;
       log('the data is loaded and response status is ', status);
-      downloadAssets(url, data, dirResourcePath);
+      downloadAssets(url, data, dirAssetsPath);
       fs.promises.writeFile(filePath, data).catch((err) => {
         throw new FileSystemError(err.message);
       });
     })
     .then(() => {
-      log(`resources is downloaded into directory ${dirResourcePath}!`);
+      log(`resources is downloaded into directory ${dirAssetsPath}!`);
       log(`the file ${filePath} is created!`);
       return filePath;
     })

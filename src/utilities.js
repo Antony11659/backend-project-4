@@ -17,19 +17,20 @@ const buildName = (address, type) => {
 };
 
 const loadData = (url, dir) => {
-  const filePath = path.join(dir, buildName(url));
+  // make and replace instead of url relative file path into the html file
+  const fullFilePath = path.join(dir, buildName(url));
+  const rootDir = path.dirname(fullFilePath);
+  const relativeFilePath = path.relative(rootDir, fullFilePath);
   return new Promise((resolve) => {
-    // const data = url;
-     const data = axios.get(url, { responseType: 'stream' });
-    // const data = axios.get(url);
+    const data = axios.get(url, { responseType: 'stream' });
     resolve(data);
   })
     .then((response) => {
-      fs.promises.writeFile(filePath, response.data).catch((err) => {
+      fs.promises.writeFile(fullFilePath, response.data).catch((err) => {
         throw new Error(err);
       });
     })
-    .then(() => filePath)
+    .then(() => relativeFilePath)
     .catch((err) => {
       throw new Error(err.message);
     });
@@ -51,7 +52,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   ];
 
   const $ = cheerio.load(data);
-  // select all local links from html page
+  // select all local links from the html page
   const allLocalLinks = tags.reduce((acc, { tag, href }) => {
     $(`${tag}[${href}]`).each((_, el) => {
       // make from srcLine the whole url
@@ -71,7 +72,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
     return acc;
   }, []);
 
-  return Promise.all(allLocalLinks);
+  return Promise.all(allLocalLinks).then(() => console.log($.html()));
 };
 
 export { downloadAssets, buildName };
