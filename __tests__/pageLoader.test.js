@@ -1,9 +1,14 @@
 import fs from 'fs';
 import os from 'os';
 import nock from 'nock';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import pageLoad from '../src/load.js';
 import { after, before } from '../__fixtures__/html.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const getFixturePath = (filename) => path.join(__dirname, '..', '__fixtures__', filename);
 
 const testAddress = 'https://ru.hexlet.io/courses';
 
@@ -16,21 +21,30 @@ const isDirExists = (dirPath) => new Promise((resolve) => {
 const testDomain = 'https://ru.hexlet.io';
 
 const server = [
-  { domain: '/courses', data: before },
-  { domain: '/assets/application.css', data: 'margin: 0; padding: 0' },
-  { domain: '/assets/professions/nodejs.png', data: 'any image file' },
-  { domain: '/packs/js/runtime.js', data: 'console.log(\'Hello, hexlet\'):' },
+  // create a fake server which consists of domain and filepath to the data of the domain
+  { domain: '/courses', data: 'ru-hexlet-io-courses.html' },
+  { domain: '/courses.html', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-courses.html' },
+  { domain: '/assets/application.css', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-application.css' },
+  { domain: '/assets/professions/nodejs.png', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png' },
+  { domain: '/packs/js/runtime.js', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js' },
 ];
 
 server.forEach((el) => {
+  // for each request nock returns the data from fake server
   const { domain, data } = el;
-  
+
   nock(testDomain)
-  .persist()
-  .get(domain)
-  .reply(200, data)
-  // .get('/assets/application.css')
-  // .reply(200, server[1].data);
+    .persist()
+    .get(domain)
+    .reply(200, () => new Promise((resolve, reject) => {
+      const filepath = getFixturePath(data);
+      const asset = fs.promises.readFile(filepath, 'utf8');
+      resolve(asset);
+    })
+      .then((response) => response)
+      .catch((err) => {
+        throw new Error(err.message);
+      }));
 });
 
 nock.disableNetConnect();
@@ -39,8 +53,15 @@ nock.disableNetConnect();
 
 // beforeEach(async () => {
 const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
-pageLoad(testAddress, tmpDir).then((res) => console.log(res));
 // });
+pageLoad(testAddress, tmpDir);
+
+// const getData = async (url) => {
+//   const { data } = await axios.get(url);
+//   console.log(data);
+// };
+
+// getData(testAddress);
 
 // test('check the correct file path', async () => {
 //   const expectedData = path.join(tmpDir, 'ru-hexlet-io-courses.html');

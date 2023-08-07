@@ -27,8 +27,9 @@ const downloadPage = (url, dir = process.cwd()) => {
     .then((response) => {
       const { data, status } = response;
       log('the data is loaded and response status is ', status);
-      downloadAssets(url, data, dirAssetsPath);
-      fs.promises.writeFile(filePath, data).catch((err) => {
+      return downloadAssets(url, data, dirAssetsPath);
+    }).then((response) => {
+      fs.promises.writeFile(filePath, response).catch((err) => {
         throw new FileSystemError(err.message);
       });
     })

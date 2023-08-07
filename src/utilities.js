@@ -7,6 +7,14 @@ const require = createRequire(import.meta.url);
 require('axios-debug-log');
 const axios = require('axios');
 
+const getRelativeFilePath = (fullFilePath) => {
+  const rootDir = path.dirname(fullFilePath);
+  const relativeDirName = path.parse(rootDir).base;
+  const fileName = path.parse(fullFilePath).base;
+  const relativeFileName = path.join(relativeDirName, fileName);
+  return relativeFileName;
+};
+
 const buildName = (address, type) => {
   const addressWithoutProtocol = address.replace(/^(\/|^https?:\/\/)/, '').concat('/', '');
   const { dir, name, ext } = path.parse(addressWithoutProtocol);
@@ -17,10 +25,9 @@ const buildName = (address, type) => {
 };
 
 const loadData = (url, dir) => {
-  // make and replace instead of url relative file path into the html file
+  // replace url with a relative file path into the html file
   const fullFilePath = path.join(dir, buildName(url));
-  const rootDir = path.dirname(fullFilePath);
-  const relativeFilePath = path.relative(rootDir, fullFilePath);
+  const relativeFilePath = getRelativeFilePath(fullFilePath);
   return new Promise((resolve) => {
     const data = axios.get(url, { responseType: 'stream' });
     resolve(data);
@@ -72,7 +79,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
     return acc;
   }, []);
 
-  return Promise.all(allLocalLinks).then(() => console.log($.html()));
+  return Promise.all(allLocalLinks).then(() => $.html());
 };
 
 export { downloadAssets, buildName };
