@@ -4,8 +4,7 @@ import process from 'process';
 import debug from 'debug';
 import { createRequire } from 'module';
 import { downloadAssets, buildName } from './utilities.js';
-import FileSystemError from '../errors/FileSystemError.js';
-import NetworkError from '../errors/NetworkError.js';
+import handleError from '../errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
 require('axios-debug-log');
@@ -18,10 +17,8 @@ const downloadPage = (url, dir = process.cwd()) => {
   const filePath = path.join(dir, buildName(url, '.html'));
   const dirAssetsPath = path.join(dir, buildName(url, '_files'));
   return new Promise((resolve) => {
-    const data = axios.get(url).catch((err) => {
-      throw new NetworkError(err);
-    });
-    fs.promises.mkdir(dirAssetsPath);
+    const data = axios.get(url).catch((err) => handleError('NETWORK', err));
+    fs.promises.mkdir(dirAssetsPath).catch((err) => handleError('FILE_SYSTEM', err));
     resolve(data);
   })
     .then((response) => {
@@ -29,18 +26,14 @@ const downloadPage = (url, dir = process.cwd()) => {
       log('the data is loaded and response status is ', status);
       return downloadAssets(url, data, dirAssetsPath);
     }).then((response) => {
-      fs.promises.writeFile(filePath, response).catch((err) => {
-        throw new FileSystemError(err.message);
-      });
+      fs.promises.writeFile(filePath, response).catch((err) => handleError('FILE_SYSTEM', err));
     })
     .then(() => {
       log(`resources is downloaded into directory ${dirAssetsPath}!`);
       log(`the file ${filePath} is created!`);
       return filePath;
     })
-    .catch((err) => {
-      throw new FileSystemError(err.message);
-    });
+    .catch((err) => handleError('FILE_SYSTEM', err));
 };
 
 export default downloadPage;

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import * as cheerio from 'cheerio';
 import { createRequire } from 'module';
+import handleError from '../errors/errorHandler';
 
 const require = createRequire(import.meta.url);
 require('axios-debug-log');
@@ -29,18 +30,14 @@ const loadData = (url, dir) => {
   const fullFilePath = path.join(dir, buildName(url));
   const relativeFilePath = getRelativeFilePath(fullFilePath);
   return new Promise((resolve) => {
-    const data = axios.get(url, { responseType: 'stream' });
+    const data = axios.get(url, { responseType: 'stream' }).catch((error) => handleError('NETWORK', error));
     resolve(data);
   })
     .then((response) => {
-      fs.promises.writeFile(fullFilePath, response.data).catch((err) => {
-        throw new Error(err);
-      });
+      fs.promises.writeFile(fullFilePath, response.data).catch((error) => handleError('FILE_SYSTEM', error));
     })
     .then(() => relativeFilePath)
-    .catch((err) => {
-      throw new Error(err.message);
-    });
+    .catch((error) => handleError('FILE_SYSTEM', error));
 };
 
 const makeSrcLine = (url, srcLine) => new URL(srcLine, url).href;

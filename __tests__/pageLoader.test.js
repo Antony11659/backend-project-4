@@ -13,7 +13,7 @@ const normalizeHtml = (text) => text.replace(/\s+/g, '');
 
 const testAddress = 'https://ru.hexlet.io/courses';
 
-const isDirExists = (dirPath) => new Promise((resolve) => {
+const dirExists = (dirPath) => new Promise((resolve) => {
   resolve(fs.promises.access(dirPath));
 })
   .then(() => true)
@@ -65,7 +65,7 @@ test('check the correct file path', async () => {
 test('check if a dir was created', async () => {
   const expectedDir = path.join(tmpDir, 'ru-hexlet-io-courses_files');
   await pageLoad(testAddress, tmpDir);
-  const result = await isDirExists(expectedDir);
+  const result = await dirExists(expectedDir);
   expect(result).toBeTruthy();
 });
 
