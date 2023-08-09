@@ -2,11 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import * as cheerio from 'cheerio';
 import { createRequire } from 'module';
-import handleError from '../errors/errorHandler';
+import handleError from '../errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
 require('axios-debug-log');
 const axios = require('axios');
+
+const dirExists = (dirPath) => new Promise((resolve) => {
+  resolve(fs.promises.access(dirPath));
+})
+  .then(() => true)
+  .catch(() => false);
 
 const getRelativeFilePath = (fullFilePath) => {
   const rootDir = path.dirname(fullFilePath);
@@ -79,4 +85,4 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   return Promise.all(allLocalLinks).then(() => $.html());
 };
 
-export { downloadAssets, buildName };
+export { downloadAssets, buildName, dirExists };

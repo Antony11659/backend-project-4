@@ -3,7 +3,7 @@ import path from 'path';
 import process from 'process';
 import debug from 'debug';
 import { createRequire } from 'module';
-import { downloadAssets, buildName } from './utilities.js';
+import { downloadAssets, buildName, dirExists } from './utilities.js';
 import handleError from '../errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
@@ -13,6 +13,10 @@ const axios = require('axios');
 const log = debug('page-loader');
 
 const downloadPage = (url, dir = process.cwd()) => {
+  // if (!dirExists(dir)) {
+  //   return new Error('EEdIST');
+  // }
+
   log(`the data is loading from ${url} into ${dir}`);
   const filePath = path.join(dir, buildName(url, '.html'));
   const dirAssetsPath = path.join(dir, buildName(url, '_files'));
@@ -23,7 +27,7 @@ const downloadPage = (url, dir = process.cwd()) => {
   })
     .then((response) => {
       const { data, status } = response;
-      log('the data is loaded and response status is ', status);
+      log('the data is loading and response status is ', status);
       return downloadAssets(url, data, dirAssetsPath);
     }).then((response) => {
       fs.promises.writeFile(filePath, response).catch((err) => handleError('FILE_SYSTEM', err));

@@ -9,7 +9,7 @@ const handleError = (type, error) => {
       case 'EACCES':
         throw new FileSystemError('PERMISSION_DENIED_ERROR');
       case 'EEXIST':
-        throw FileSystemError('FILE_OR_DIR_EXISTS_ERROR');
+        throw new FileSystemError('FILE_OR_DIR_EXISTS_ERROR');
       default:
         throw new FileSystemError('FS_GENERIC_ERROR');
     }
