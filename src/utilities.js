@@ -8,12 +8,6 @@ const require = createRequire(import.meta.url);
 require('axios-debug-log');
 const axios = require('axios');
 
-const dirExists = (dirPath) => new Promise((resolve) => {
-  resolve(fs.promises.access(dirPath));
-})
-  .then(() => true)
-  .catch(() => false);
-
 const getRelativeFilePath = (fullFilePath) => {
   const rootDir = path.dirname(fullFilePath);
   const relativeDirName = path.parse(rootDir).base;
@@ -36,14 +30,14 @@ const loadData = (url, dir) => {
   const fullFilePath = path.join(dir, buildName(url));
   const relativeFilePath = getRelativeFilePath(fullFilePath);
   return new Promise((resolve) => {
-    const data = axios.get(url, { responseType: 'stream' }).catch((error) => handleError('NETWORK', error));
+    const data = axios.get(url, { responseType: 'stream' }).catch((error) => handleError(error));
     resolve(data);
   })
     .then((response) => {
-      fs.promises.writeFile(fullFilePath, response.data).catch((error) => handleError('FILE_SYSTEM', error));
+      fs.promises.writeFile(fullFilePath, response.data).catch((error) => handleError(error));
     })
     .then(() => relativeFilePath)
-    .catch((error) => handleError('FILE_SYSTEM', error));
+    .catch((error) => handleError(error));
 };
 
 const makeSrcLine = (url, srcLine) => new URL(srcLine, url).href;
@@ -85,4 +79,4 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   return Promise.all(allLocalLinks).then(() => $.html());
 };
 
-export { downloadAssets, buildName, dirExists };
+export { downloadAssets, buildName };

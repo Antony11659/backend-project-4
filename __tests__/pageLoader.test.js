@@ -10,14 +10,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const getFixturePath = (filename) => path.join(__dirname, '..', '__fixtures__', filename);
 const normalizeHtml = (text) => text.replace(/\s+/g, '');
-
-const testAddress = 'https://ru.hexlet.io/courses';
-
 const dirExists = (dirPath) => new Promise((resolve) => {
   resolve(fs.promises.access(dirPath));
 })
   .then(() => true)
   .catch(() => false);
+
+const testAddress = 'https://ru.hexlet.io/courses';
 
 const testDomain = 'https://ru.hexlet.io';
 
