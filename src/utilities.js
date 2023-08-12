@@ -29,8 +29,10 @@ const loadData = (url, dir) => {
   // replace url with a relative file path into the html file
   const fullFilePath = path.join(dir, buildName(url));
   const relativeFilePath = getRelativeFilePath(fullFilePath);
-  return new Promise((resolve) => {
-    const data = axios.get(url, { responseType: 'stream' }).catch((error) => handleError(error));
+  return new Promise((resolve, reject) => {
+    const data = axios.get(url, { responseType: 'stream' }).catch((error) => {
+      reject(handleError(error));
+    });
     resolve(data);
   })
     .then((response) => {

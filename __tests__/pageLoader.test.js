@@ -54,24 +54,39 @@ let tmpDir;
 beforeEach(async () => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
 });
+describe('correct cases', () => {
+  test('checks the correct file path', async () => {
+    const expectedData = path.join(tmpDir, 'ru-hexlet-io-courses.html');
+    const filePath = await pageLoad(testAddress, tmpDir);
+    expect(filePath).toBe(expectedData);
+  });
 
-test('check the correct file path', async () => {
-  const expectedData = path.join(tmpDir, 'ru-hexlet-io-courses.html');
-  const filePath = await pageLoad(testAddress, tmpDir);
-  expect(filePath).toBe(expectedData);
+  test('checks if a dir was created', async () => {
+    const expectedDir = path.join(tmpDir, 'ru-hexlet-io-courses_files');
+    await pageLoad(testAddress, tmpDir);
+    const result = await dirExists(expectedDir);
+    expect(result).toBeTruthy();
+  });
+
+  test('checks the html page after downloading', async () => {
+    const filePath = await pageLoad(testAddress, tmpDir);
+    const resultData = await fs.promises.readFile(filePath, 'utf8');
+    const resultFile = normalizeHtml(resultData);
+    const expectedData = normalizeHtml(after);
+    expect(resultFile).toBe(expectedData);
+  });
 });
 
-test('check if a dir was created', async () => {
-  const expectedDir = path.join(tmpDir, 'ru-hexlet-io-courses_files');
-  await pageLoad(testAddress, tmpDir);
-  const result = await dirExists(expectedDir);
-  expect(result).toBeTruthy();
-});
+// describe('wrong cases', () => {
+//   describe('networks errors', () => {
+//     test('throws NetworkError for invalid HTTP request', async () => {
+//       await pageLoad('bla', tmpDir).rejects.toThrow('NetworkError');
+//     });
+//   });
 
-test('check the html page after downloading', async () => {
-  const filePath = await pageLoad(testAddress, tmpDir);
-  const resultData = await fs.promises.readFile(filePath, 'utf8');
-  const resultFile = normalizeHtml(resultData);
-  const expectedData = normalizeHtml(after);
-  expect(resultFile).toBe(expectedData);
-});
+// describe('throws FileSystemError for invalid directory', () => {
+//   test('shuold return an error', async () => {
+
+//   });
+// });
+// });
