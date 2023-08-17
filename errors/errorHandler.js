@@ -1,22 +1,35 @@
 import FileSystemError from './FileSystemError.js';
 import NetworkError from './NetworkError.js';
 
+const httpErrorStatusMessages = {
+  400: 'BAD_REQUEST',
+  401: 'UNAUTHORIZED',
+  403: 'FORBIDDEN',
+  404: 'NOT_FOUND',
+  405: 'METHOD_NOT_ALLOWED',
+  406: 'NOT_ACCEPTABLE',
+  408: 'REQUEST_TIMEOUT',
+  429: 'TOO_MANY_REQUESTS',
+  500: 'INTERNAL_SERVER_ERROR',
+  501: 'NOT_IMPLEMENTED',
+  503: 'SERVICE_UNAVAILABLE',
+  504: 'GATEWAY_TIMEOUT',
+};
+
 const handleError = (error) => {
-  console.error(error.message);
-  switch (error.code) {
-    case 'ENOENT':
-      throw new FileSystemError('FILE_NOT_FOUND_ERROR');
-    case 'EACCES':
-      throw new FileSystemError('PERMISSION_DENIED_ERROR');
-    case 'EEXIST':
-      throw new FileSystemError('FILE_OR_DIR_EXISTS_ERROR');
-    case 111:
-      throw new NetworkError('CONNECTION_REFUSED_ERROR');
-    case 404:
-      throw new NetworkError('IP_NOT_FOUND_ERROR');
-    default:
-      throw new FileSystemError('UNKNOWN_ERROR');
+  const { message, response, code } = error;
+  console.error(message);
+  if (code === 'ENOENT' || code === 'EACCES' || code === 'ECONNREFUSED') {
+    throw new FileSystemError(message);
   }
+
+  if (response) {
+    const { status } = response;
+    const errorMessage = httpErrorStatusMessages[status];
+    throw new NetworkError(errorMessage);
+  }
+
+  throw new Error(message ?? 'UNKNOWN_ERROR');
 };
 
 export default handleError;

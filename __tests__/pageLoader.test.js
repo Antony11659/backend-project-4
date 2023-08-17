@@ -18,35 +18,6 @@ const dirExists = (dirPath) => new Promise((resolve) => {
 
 const testAddress = 'https://ru.hexlet.io/courses';
 
-const testDomain = 'https://ru.hexlet.io';
-
-const server = [
-  // create a fake server
-  { domain: '/courses', data: 'ru-hexlet-io-courses.html' },
-  { domain: '/courses.html', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-courses.html' },
-  { domain: '/assets/application.css', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-application.css' },
-  { domain: '/assets/professions/nodejs.png', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png' },
-  { domain: '/packs/js/runtime.js', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js' },
-];
-
-server.forEach((el) => {
-  // nock returns for each request the data from the fake server
-  const { domain, data } = el;
-
-  nock(testDomain)
-    .persist()
-    .get(domain)
-    .reply(200, () => new Promise((resolve) => {
-      const filepath = getFixturePath(data);
-      const asset = fs.promises.readFile(filepath, 'utf8');
-      resolve(asset);
-    })
-      .then((response) => response)
-      .catch((err) => {
-        throw new Error(err.message);
-      }));
-});
-
 nock.disableNetConnect();
 
 let tmpDir;
@@ -54,7 +25,37 @@ let tmpDir;
 beforeEach(async () => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
 });
+
 describe('correct cases', () => {
+  // afterAll(() => {
+  //   nock.cleanAll();
+  // });
+
+  const testDomain = 'https://ru.hexlet.io';
+
+  const server = [
+  // create a fake server
+    { domain: '/courses', data: 'ru-hexlet-io-courses.html', status: 200 },
+    { domain: '/courses.html', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-courses.html', status: 200 },
+    { domain: '/assets/application.css', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-application.css', status: 200 },
+    { domain: '/assets/professions/nodejs.png', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png', status: 200 },
+    { domain: '/packs/js/runtime.js', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js', status: 200 },
+  ];
+
+  server.forEach((el) => {
+  // nock returns for each request the data from the fake server
+    const { domain, data, status } = el;
+    nock(testDomain)
+      .persist()
+      .get(domain)
+      .reply(status, () => new Promise((resolve) => {
+        const filepath = getFixturePath(data);
+        const asset = fs.promises.readFile(filepath, 'utf8');
+        resolve(asset);
+      })
+        .then((response) => response));
+  });
+
   test('checks the correct file path', async () => {
     const expectedData = path.join(tmpDir, 'ru-hexlet-io-courses.html');
     const filePath = await pageLoad(testAddress, tmpDir);
@@ -77,16 +78,26 @@ describe('correct cases', () => {
   });
 });
 
-// describe('wrong cases', () => {
-//   describe('networks errors', () => {
-//     test('throws NetworkError for invalid HTTP request', async () => {
-//       await pageLoad('bla', tmpDir).rejects.toThrow('NetworkError');
-//     });
-//   });
+describe('wrong cases', () => {
+  // afterAll(() => {
+  //   nock.cleanAll();
+  // });
 
-// describe('throws FileSystemError for invalid directory', () => {
-//   test('shuold return an error', async () => {
+  const wrongURL = 'http://wrongURL.com';
+  nock(wrongURL)
+    .persist()
+    .get('/')
+    .replyWithError({ response: { status: 400 } });
 
-//   });
-// });
-// });
+  describe('network errors', () => {
+    test('throws NetworkError for invalid HTTP request', async () => {
+      await expect(pageLoad(wrongURL, tmpDir)).rejects.toThrow('BAD_REQUEST');
+    });
+  });
+
+  // describe('throws FileSystemError for invalid directory', () => {
+  //   test('shuold return an error', async () => {
+  //     await expect(pageLoad(testAddress, 'bla')).rejects.toThrow();
+  //   });
+  // });
+});
