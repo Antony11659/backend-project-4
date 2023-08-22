@@ -16,9 +16,9 @@ const dirExists = (dirPath) => new Promise((resolve) => {
   .then(() => true)
   .catch(() => false);
 
-const testAddress = 'https://ru.hexlet.io/courses';
-
 nock.disableNetConnect();
+
+const testAddress = 'https://ru.hexlet.io/courses';
 
 let tmpDir;
 
@@ -27,10 +27,6 @@ beforeEach(async () => {
 });
 
 describe('correct cases', () => {
-  // afterAll(() => {
-  //   nock.cleanAll();
-  // });
-
   const testDomain = 'https://ru.hexlet.io';
 
   const server = [
@@ -79,15 +75,15 @@ describe('correct cases', () => {
 });
 
 describe('wrong cases', () => {
-  // afterAll(() => {
-  //   nock.cleanAll();
-  // });
-
   const wrongURL = 'http://wrongURL.com';
   nock(wrongURL)
     .persist()
     .get('/')
     .replyWithError({ response: { status: 400 } });
+  nock(testAddress)
+    .persist()
+    .get('')
+    .reply(200);
 
   describe('network errors', () => {
     test('throws NetworkError for invalid HTTP request', async () => {
@@ -95,9 +91,9 @@ describe('wrong cases', () => {
     });
   });
 
-  // describe('throws FileSystemError for invalid directory', () => {
-  //   test('shuold return an error', async () => {
-  //     await expect(pageLoad(testAddress, 'bla')).rejects.toThrow();
-  //   });
-  // });
+  describe('throws FileSystemError for invalid directory', () => {
+    test('shuold return an error', async () => {
+      await expect(pageLoad(testAddress, 'bla')).rejects.toThrow();
+    });
+  });
 });
