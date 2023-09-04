@@ -1,7 +1,7 @@
 import FileSystemError from './FileSystemError.js';
 import NetworkError from './NetworkError.js';
 
-const httpErrorStatusMessages = {
+const errorStatusMessages = {
   400: 'BAD_REQUEST',
   401: 'UNAUTHORIZED',
   403: 'FORBIDDEN',
@@ -25,7 +25,7 @@ const handleError = (error) => {
 
   if (response) {
     const { status } = response;
-    const errorMessage = httpErrorStatusMessages[status];
+    const errorMessage = errorStatusMessages[status];
     throw new NetworkError(errorMessage);
   }
 

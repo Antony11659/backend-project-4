@@ -1,16 +1,25 @@
 import fs from 'fs';
-// import axios from 'axios';
-// import handleError from './errors/errorHandler.js';
+import Listr from 'listr';
 
-// const getData = async (url) => {
-//   const data = await axios.get(url).catch((err) => {
-//       handleError(err);
-//     });
-//     console.error(data.statusCode);
-//   // const data = await fs.promises.readFile('./dir/file.js', 'utf8').catch((err) => {
-//   //   handleError(err);
-//   // });
-//   return data;
-// };
+const readFIle = (filePath) => new Promise((resolve, reject) => {
+  fs.promises.readFile(filePath, 'utf8').then(() => {
+    resolve('done');
+  }).catch((err) => {
+    reject(err);
+  });
+});
 
-// getData('http://example.com/missing-page');
+const files = ['./README.md', './package.json'];
+
+Promise.all(files.map((el) => {
+  const task = new Listr([
+    {
+      title: `read ${el} file`,
+      task: () => readFIle(el),
+    },
+  ]);
+
+  return task.run().catch((err) => {
+    console.error(err);
+  });
+})).then(() => console.log('All files read successfully'));

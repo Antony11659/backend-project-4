@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import * as cheerio from 'cheerio';
 import { createRequire } from 'module';
+import Listr from 'listr';
 import handleError from '../errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
@@ -64,15 +65,13 @@ const downloadAssets = (domain, data, dirWithAssets) => {
       // make from srcLine the whole url
       const url = makeSrcLine(domain, el.attribs[href]);
       if (isLocalDomain(domain, url)) {
-        // if 'rel'='canonical' is present add to this URL '.html' type to create
-        //  a more correct name for the file
+        // if 'rel'='canonical' is present add to this URL '.html' type
         const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
-
-        const promise = loadData(newUrl, dirWithAssets).then((res) => {
+        const newFilePath = loadData(newUrl, dirWithAssets).then((res) => {
           const filePathName = res;
           $(el).attr(href, filePathName);
         });
-        acc.push(promise);
+        acc.push(newFilePath);
       }
     });
     return acc;
