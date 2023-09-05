@@ -43,9 +43,9 @@ const loadData = (url, dir) => {
     .catch((error) => handleError(error));
 };
 
-const makeSrcLine = (url, srcLine) => new URL(srcLine, url).href;
+const makeUrlLine = (url, srcLine) => new URL(srcLine, url).href;
 
-const isLocalDomain = (url, currentUrl) => {
+const isDomainLocal = (url, currentUrl) => {
   const localDomain = new URL(url).host;
   const currentDomain = new URL(currentUrl).host;
   return currentDomain === localDomain;
@@ -63,8 +63,8 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   const allLocalLinks = tags.reduce((acc, { tag, href }) => {
     $(`${tag}[${href}]`).each((_, el) => {
       // make from srcLine the whole url
-      const url = makeSrcLine(domain, el.attribs[href]);
-      if (isLocalDomain(domain, url)) {
+      const url = makeUrlLine(domain, el.attribs[href]);
+      if (isDomainLocal(domain, url)) {
         // if 'rel'='canonical' is present add to this URL '.html' type
         const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
         const newFilePath = loadData(newUrl, dirWithAssets).then((res) => {
