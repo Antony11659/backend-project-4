@@ -53,31 +53,32 @@ const isDomainLocal = (url, currentUrl) => {
 
 const downloadAssets = (domain, data, dirWithAssets) => {
   const tags = [
-    { tag: 'img', href: 'src' },
     { tag: 'link', href: 'href' },
+    { tag: 'img', href: 'src' },
     { tag: 'script', href: 'src' },
   ];
 
-  const $ = cheerio.load(data);
-  // select all local links from the html page
-  const allLocalLinks = tags.reduce((acc, { tag, href }) => {
-    $(`${tag}[${href}]`).each((_, el) => {
-      // make from srcLine the whole url
-      const url = makeUrlLine(domain, el.attribs[href]);
-      if (isDomainLocal(domain, url)) {
-        // if 'rel'='canonical' is present add to this URL '.html' type
-        const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
-        const newFilePath = loadData(newUrl, dirWithAssets).then((res) => {
-          const filePathName = res;
-          $(el).attr(href, filePathName);
-        });
-        acc.push(newFilePath);
-      }
-    });
-    return acc;
-  }, []);
+  const $ = cheerio.load(data); // take HTML page
+  const allLocalLinks = tags.map(({ tag, href }) => $(tag).map((i, el) => { // select all tags
+    const url = makeUrlLine(domain, $(el).attr(href));
+    if (isDomainLocal(domain, url)) { // if domain of a href is local return task object for List
+      const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
+      return { // object for List lib
+        title: url,
+        task: () => loadData(newUrl, dirWithAssets).then((res) => { // and download data from href
+          const newFilePathName = res;
+          $(el).attr(href, newFilePathName); // and replace old url into new file path
+        }),
+      };
+    }
+    return []; // if domain isn't local return an empty array;
+  }).get());
 
-  return Promise.all(allLocalLinks).then(() => $.html());
+  const tasks = allLocalLinks.flat(); // get rid of all empty arrays
+
+  return Promise.all([
+    new Listr(tasks, { concurrent: true, exitOnError: false }).run().catch(() => {}),
+  ]).then(() => $.html()); // return new html page
 };
 
 export { downloadAssets, buildName };

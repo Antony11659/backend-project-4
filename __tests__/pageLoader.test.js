@@ -4,7 +4,7 @@ import nock from 'nock';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import pageLoad from '../src/load.js';
-import { after } from '../__fixtures__/html.js';
+import { before, after } from '../__fixtures__/html.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
