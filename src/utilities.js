@@ -3,7 +3,7 @@ import path from 'path';
 import * as cheerio from 'cheerio';
 import { createRequire } from 'module';
 import Listr from 'listr';
-import handleError from '../errors/errorHandler.js';
+import handleError from './errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
 require('axios-debug-log');

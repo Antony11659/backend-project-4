@@ -4,7 +4,7 @@ import process from 'process';
 import debug from 'debug';
 import { createRequire } from 'module';
 import { downloadAssets, buildName } from './utilities.js';
-import handleError from '../errors/errorHandler.js';
+import handleError from './errors/errorHandler.js';
 
 const require = createRequire(import.meta.url);
 require('axios-debug-log');
@@ -45,6 +45,7 @@ const downloadPage = (url, dir = process.cwd()) => {
     .then(() => {
       log(`resources is downloaded into directory ${dirAssetsPath}!`);
       log(`the file ${filePath} is created!`);
+      console.log(`Page was successfully downloaded into ${dirAssetsPath}`);
       return filePath;
     })
     .catch((err) => {
