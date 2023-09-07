@@ -2,7 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "backend-project#3",
-  "main": "./src/index.js",
+  "main": "./src/load.js",
   "scripts": {
     "test": "npx jest"
   },
