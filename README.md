@@ -18,3 +18,5 @@ npm link
 ```
 
 ## Usage example:
+
+[![see example](https://asciinema.org/a/1eEA6xBQDyHEj0IN5gaehoJj5.svg)](https://asciinema.org/a/1eEA6xBQDyHEj0IN5gaehoJj5)
