@@ -91,9 +91,14 @@ describe('wrong cases', () => {
     });
   });
 
-  describe('throws FileSystemError for invalid directory', () => {
-    test('shuold return an error', async () => {
+  describe('file system error', () => {
+    test('directory doesn\'t exist', async () => {
       await expect(pageLoad(testAddress, 'bla')).rejects.toThrow();
     });
+
+    // test('access to the directory is denied', async () => {
+    //   await fs.promises.chmod(tmpDir, 0o000);
+    //   await expect(pageLoad(testAddress, tmpDir)).rejects.toThrow();
+    // });
   });
 });
