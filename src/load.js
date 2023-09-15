@@ -45,7 +45,6 @@ const downloadPage = (url, dir = process.cwd()) => {
     .then(() => {
       log(`resources is downloaded into directory ${dirAssetsPath}!`);
       log(`the file ${filePath} is created!`);
-      console.log(`Page was successfully downloaded into ${dirAssetsPath}`);
       return filePath;
     })
     .catch((err) => {

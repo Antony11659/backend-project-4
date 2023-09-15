@@ -18,7 +18,6 @@ const errorStatusMessages = {
 
 const handleError = (error) => {
   const { message, response, code } = error;
-  console.error(message);
   if (code === 'ENOENT' || code === 'EACCES' || code === 'ECONNREFUSED') {
     throw new FileSystemError(message);
   }
