@@ -18,7 +18,7 @@ const downloadPage = (url, dir = process.cwd()) => {
 
   return new Promise((resolve, reject) => {
     log(`the directory ${dir} is checking...`);
-    const data = fs.promises.access(dir).then(() => {
+    const data = fs.promises.access(dir, fs.constants.R_OK).then(() => {
       log(`the directory ${dir} is valid`);
       log(`the data is loading from ${url} into ${dir}`);
       fs.promises.mkdir(dirAssetsPath).catch((err) => {
