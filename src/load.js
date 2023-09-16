@@ -22,13 +22,13 @@ const downloadPage = (url, dir = process.cwd()) => {
       log(`the directory ${dir} is valid`);
       log(`the data is loading from ${url} into ${dir}`);
       fs.promises.mkdir(dirAssetsPath).catch((err) => {
-        reject(handleError(err));
+        handleError(err);
       });
       return axios.get(url).catch((err) => {
         reject(handleError(err));
       });
     }).catch((err) => {
-      handleError(err);
+      reject(handleError(err));
     });
     resolve(data);
   })
