@@ -62,7 +62,6 @@ const downloadAssets = (domain, data, dirWithAssets) => {
   const allLocalLinks = tags.map(({ tag, href }) => $(tag).map((i, el) => { // select all tags
     const url = makeUrlLine(domain, $(el).attr(href));
     if (isDomainLocal(domain, url)) { // if domain of a href is local return task object for List
-      // const newUrl = ($(el).attr('rel') === 'canonical') ? url.concat('.html') : url;
       const newUrl = url;
       return { // object for List
         title: url,
