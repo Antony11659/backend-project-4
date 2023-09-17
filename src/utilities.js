@@ -58,7 +58,7 @@ const downloadAssets = (domain, data, dirWithAssets) => {
     { tag: 'script', href: 'src' },
   ];
 
-  const $ = cheerio.load(data); // take HTML page
+  const $ = cheerio.load(data, { normalizeWhitespace: true }); // take HTML page
   const allLocalLinks = tags.map(({ tag, href }) => $(tag).map((i, el) => { // select all tags
     const url = makeUrlLine(domain, $(el).attr(href));
     if (isDomainLocal(domain, url)) { // if domain of a href is local return task object for List
