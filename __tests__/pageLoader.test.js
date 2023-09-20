@@ -29,7 +29,7 @@ beforeEach(async () => {
 describe('correct cases', () => {
   const testDomain = 'https://ru.hexlet.io';
 
-  const server = [
+  const mockData = [
   // create a fake server
     { domain: '/courses', data: 'ru-hexlet-io-courses.html', status: 200 },
     { domain: '/courses.html', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-courses.html', status: 200 },
@@ -38,7 +38,7 @@ describe('correct cases', () => {
     { domain: '/packs/js/runtime.js', data: 'ru-hexlet-io-courses_files/ru-hexlet-io-packs-js-runtime.js', status: 200 },
   ];
 
-  server.forEach((el) => {
+  mockData.forEach((el) => {
   // nock returns for each request the data from the fake server
     const { domain, data, status } = el;
     nock(testDomain)
