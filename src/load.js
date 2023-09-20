@@ -16,42 +16,26 @@ const downloadPage = (url, dir = process.cwd()) => {
   const filePath = path.join(dir, buildName(url, '.html'));
   const dirAssetsPath = path.join(dir, buildName(url, '_files'));
 
-  return new Promise((resolve, reject) => {
-    log(`the directory ${dir} is checking...`);
-    // eslint-disable-next-line no-bitwise
-    const data = fs.promises.access(dir, fs.constants.R_OK | fs.constants.W_OK).then(() => {
-      log(`the directory ${dir} is valid`);
-      log(`the data is loading from ${url} into ${dir}`);
-      fs.promises.mkdir(dirAssetsPath).catch((err) => {
-        handleError(err);
+  log(`the directory ${dir} is checking...`);
+  // eslint-disable-next-line no-bitwise
+  return fs.promises.access(dir, fs.constants.R_OK | fs.constants.W_OK).then(() => {
+    log(`the directory ${dir} is valid`);
+    log(`the data is loading from ${url} into ${dir}`);
+    fs.promises.mkdir(dirAssetsPath);
+    return axios.get(url)
+      .then((response) => {
+        const { data, status } = response;
+        log('response status is ', status);
+        return downloadAssets(url, data, dirAssetsPath);
+      })
+      .then((response) => fs.promises.writeFile(filePath, response))
+      .then(() => {
+        log(`resources is downloaded into directory ${dirAssetsPath}!`);
+        log(`the file ${filePath} is created!`);
+        return filePath;
       });
-      return axios.get(url).catch((err) => {
-        reject(handleError(err));
-      });
-    }).catch((err) => {
-      reject(handleError(err));
-    });
-    resolve(data);
-  })
-
-    .then((response) => {
-      const { data, status } = response;
-      log('response status is ', status);
-      return downloadAssets(url, data, dirAssetsPath);
-    })
-    .then((response) => {
-      fs.promises.writeFile(filePath, response).catch((err) => {
-        handleError(err);
-      });
-    })
-    .then(() => {
-      log(`resources is downloaded into directory ${dirAssetsPath}!`);
-      log(`the file ${filePath} is created!`);
-      return filePath;
-    })
-    .catch((err) => {
-      handleError(err);
-    });
+  }).catch((err) => {
+    handleError(err);
+  });
 };
-
 export default downloadPage;
